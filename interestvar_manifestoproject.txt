@@ -1,0 +1,53 @@
+107 - internationalism (positive)
+108 - European community/union (positive)
+109 - Internationalism: Negative
+110 - European Community/Union: Negative
+202 - Democracy
+304 - Political Corruption
+305 - Political Authority
+401 - Free Market Economy
+403	Market Regulation
+406	Protectionism: Positive
+407	Protectionism: Negative
+502	Culture: Positive
+504	Welfare State Expansion
+505	Welfare State Limitation
+601	National Way of Life: Positive
+602     National Way of Life: Negative
+603	Traditional Morality: Positive
+604	Traditional Morality: Negative
+607	Multiculturalism: Positive
+608	Multiculturalism: Negative
+705	Underprivileged Minority Groups
+
+7062	Refugees: Positive
+202.4	Direct Democracy: Positive
+305.1	Political Authority: Party Competence
+305.2	Political Authority: Personal Competence
+305.3	Political Authority: Strong government
+601.1	National Way of Life General: Positive
+601.2	National Way of Life: Immigration: Negative
+602.1	National Way of Life General: Negative
+602.2	National Way of Life: Immigration: Positive
+607.1	Multiculturalism General: Positive
+607.2	Multiculturalism: Immigrants Diversity
+607.3	Multiculturalism: Indigenous rights: Positive
+608.1	Multiculturalism General: Negative
+608.2	Multiculturalism: Immigrants Assimilation
+608.3	Multiculturalism: Indigenous rights: Negative
+
+
+variables ESS
+
+lrscale  self-placement in the left-right scale
+
+
+
+
+
+
+
+
+
+
+
