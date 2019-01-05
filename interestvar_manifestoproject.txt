@@ -39,15 +39,11 @@
 
 variables ESS
 
-lrscale  self-placement in the left-right scale
+"lrgen", "supportEU", "supportEP", "rejectimmig", "assim", "envnotimp", "civilliberties", "libcustoms", "antirefugee"
 
+variables ches
 
-
-
-
-
-
-
+"fav_intEU", "fav_ep_power", "lrgen", "lr_econ", "lr_econ_slc", "postmat_trad", "postmat_trad_slc", "spend_or_taxes", "spend_or_taxes_slc", "dereg_mkt", "dereg_mkt_slc", "stateinterv", "laworder", "laworder", "laworder_slc", "oppos_libpol", "oppos_libpol_slc", "religious", "religion_slc", "reject_immig", "immigra_salience", "assimil", "assimil_slc", "envnotimp", "env_slc", "cosmop_nation", "cosmop_nation_slc", "nation", "mip_one", "mip_two", "mip_three"
 
 
 
