@@ -46,4 +46,6 @@ variables ches
 "fav_intEU", "fav_ep_power", "lrgen", "lr_econ", "lr_econ_slc", "postmat_trad", "postmat_trad_slc", "spend_or_taxes", "spend_or_taxes_slc", "dereg_mkt", "dereg_mkt_slc", "stateinterv", "laworder", "laworder", "laworder_slc", "oppos_libpol", "oppos_libpol_slc", "religious", "religion_slc", "reject_immig", "immigra_salience", "assimil", "assimil_slc", "envnotimp", "env_slc", "cosmop_nation", "cosmop_nation_slc", "nation", "mip_one", "mip_two", "mip_three"
 
 
-
+manifesto variables
+"pervote", "presvote", "absseat", "absseat", "rile", "planeco", "markeco", "welfare", "per102", "per102", "per102", "per201", "per305", "per401", "per402", "per403", "per501", 
+"per503", "per601", "per603", "per605", "per608", "per7062", "per201_2", "per202_4", "per305_3", "per601_1", "per601_2", "per605_1", "per608_1", "per608_2"

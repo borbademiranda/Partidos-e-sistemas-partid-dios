@@ -1,0 +1,265 @@
+#Monografia - Joaquim Meira
+
+setwd("C:/Users/test/Desktop/2018.2 - Partidos políticos e sistemas partidários/tcc_joaquimmeira")
+
+library(magrittr)
+library(tidyverse)
+install.packages("haven")
+library(haven) #v 1.10
+library(emdist)
+
+load("bls7_released_v01.rdata") #Dados do Brazilian Legislative Surveys
+wvs <- read_stata("WV6_Stata_v_2016_01_01.dta") #Dados do World Values Survey, onda 6, Brasil
+brasil <- read_spss("BRA6_UFPE_v20042018.sav") #Base com as perguntas especificas para o Brasil
+
+bls %<>% filter(wave == 2013)
+wvs %<>% filter(V2 == 76)
+
+brasil[,setdiff(names(brasil),names(wvs))]
+
+wvs %<>% cbind(brasil[,setdiff(names(brasil),names(wvs))])
+rm(brasil)
+
+#Tratar e reescalar dados
+bls$ppswitc2 %<>% as.numeric
+bls$onuseg %<>% as.numeric
+bls$bndes %<>% as.numeric
+bls$cotaafro %<>% as.numeric
+bls$cotrenda %<>% as.numeric
+bls$casament %<>% as.numeric
+bls$aborto %<>% as.numeric
+
+is.na(bls[,c("ppswitc2","onuseg","bndes","cotaafro","cotrenda","casament","aborto")]) <- 
+  bls[,c("ppswitc2","onuseg","bndes","cotaafro","cotrenda","casament","aborto")] == 6
+bls[,c("ppswitc2","onuseg","bndes","cotaafro","cotrenda","casament","aborto")] <- 
+  (bls[,c("ppswitc2","onuseg","bndes","cotaafro","cotrenda","casament","aborto")] - 1)/4
+
+wvs[,c("V228L", "V228M", "V228N", "V228O", "V228P", "V228Q", "V228R")] <- 
+  (wvs[,c("V228L", "V228M", "V228N", "V228O", "V228P", "V228Q", "V228R")] - 1)/4
+
+is.na(wvs$Y001) <- wvs$Y001 < 0
+wvs$Y001 <- wvs$Y001/5
+bls$pm12 <- bls$pm12/5
+
+is.na(bls[,c("lrclass", "renda", "inicpriv", "govresp", "concorr", "getrich", "trabvida")]) <-
+  bls[,c("lrclass", "renda", "inicpriv", "govresp", "concorr", "getrich", "trabvida")] == 99
+table(bls$lrclass)
+
+bls[,c("lrclass", "renda", "inicpriv", "govresp", "concorr", "getrich", "trabvida")] <- 
+  (bls[,c("lrclass", "renda", "inicpriv", "govresp", "concorr", "getrich", "trabvida")] - 1)/9
+
+is.na(wvs[,c("V95", "V96","V97","V98","V99","V100","V101")]) <-
+  wvs[,c("V95", "V96","V97","V98","V99","V100","V101")] < 0
+wvs[,c("V95", "V96","V97","V98","V99","V100","V101")] <- 
+  (wvs[,c("V95", "V96","V97","V98","V99","V100","V101")] - 1)/9
+table(wvs$V95)
+
+bls$enviro %<>% as.numeric
+is.na(bls$enviro) <- bls$enviro == 3
+bls$enviro <- bls$enviro - 1
+
+is.na(wvs$V81) <- (wvs$V81 < 0 | wvs$V81 == 3)
+wvs$V81 <- wvs$V81 - 1
+
+emdw(blspt, wvspt, dist = "euclidean")
+
+#Função "emd.dis": cálculo do EMD para duas variáveis de forma separada.
+emd.dis <- function(var1, var2){
+  X <- as.matrix(var1[which(is.na(var1) == F)])
+  Y <- as.matrix(var2[which(is.na(var2) == F)])
+  weight.x <- rep(1/nrow(X),nrow(X))
+  weight.y <- rep(1/nrow(Y),nrow(Y))
+  emdw(X,weight.x,Y,weight.y,dist="manhattan")
+}
+
+#Analises
+
+?as.tibble
+Analises <- as_tibble(list(nomes = c("Ideologia", "Renda", "Inic. Privada", "Resp. do Governo", "Concorrência", "Meritocracia", "Riqueza",
+                           "Troca de partido", "CSNU", "BNDES", "Cotas (afro.)", "Cotas (renda)","Casamento Homo.","Aborto",
+                           "Índice PM", "Meio-ambiente"), ord = c(1:16)))
+
+Analises$geral <- c(emd.dis(bls$lrclass, wvs$V95), emd.dis(bls$renda, wvs$V96), emd.dis(bls$inicpriv, wvs$V97), 
+          emd.dis(bls$govresp, wvs$V98), emd.dis(bls$concorr, wvs$V99), emd.dis(bls$getrich, wvs$V100),
+          emd.dis(bls$trabvida, wvs$V101),
+          emd.dis(bls$ppswitc2, wvs$V228L), emd.dis(bls$onuseg, wvs$V228M), emd.dis(bls$bndes, wvs$V228N),
+          emd.dis(bls$cotaafro, wvs$V228O), emd.dis(bls$cotrenda, wvs$V228P), emd.dis(bls$casament, wvs$V228Q),
+          emd.dis(bls$aborto, wvs$V228R), emd.dis(bls$pm12, wvs$Y001), emd.dis(bls$enviro, wvs$V81))
+
+
+wvspt <- wvs %>% filter(V228 == 76002)
+blspt <- bls %>% filter(party_survey == "PT")
+
+Analises$PT <- c(emd.dis(blspt$lrclass, wvspt$V95), emd.dis(blspt$renda, wvspt$V96), emd.dis(blspt$inicpriv, wvspt$V97), 
+                 emd.dis(blspt$govresp, wvspt$V98), emd.dis(blspt$concorr, wvspt$V99), emd.dis(blspt$getrich, wvspt$V100),
+                 emd.dis(blspt$trabvida, wvspt$V101),
+                 emd.dis(blspt$ppswitc2, wvspt$V228L), emd.dis(blspt$onuseg, wvspt$V228M), emd.dis(blspt$bndes, wvspt$V228N),
+                 emd.dis(blspt$cotaafro, wvspt$V228O), emd.dis(blspt$cotrenda, wvspt$V228P), emd.dis(blspt$casament, wvspt$V228Q),
+                 emd.dis(blspt$aborto, wvspt$V228R), emd.dis(blspt$pm12, wvspt$Y001), emd.dis(blspt$enviro, wvspt$V81))
+
+wvspsdb <- wvs %>% filter(V228 == 76003)
+blspsdb <- bls %>% filter(party_survey == "PSDB")
+
+Analises$PSDB <- c(emd.dis(blspsdb$lrclass, wvspsdb$V95), emd.dis(blspsdb$renda, wvspsdb$V96), emd.dis(blspsdb$inicpriv, wvspsdb$V97), 
+                   emd.dis(blspsdb$govresp, wvspsdb$V98), emd.dis(blspsdb$concorr, wvspsdb$V99), emd.dis(blspsdb$getrich, wvspsdb$V100),
+                   emd.dis(blspsdb$trabvida, wvspsdb$V101),
+                   emd.dis(blspsdb$ppswitc2, wvspsdb$V228L), emd.dis(blspsdb$onuseg, wvspsdb$V228M), emd.dis(blspsdb$bndes, wvspsdb$V228N),
+                   emd.dis(blspsdb$cotaafro, wvspsdb$V228O), emd.dis(blspsdb$cotrenda, wvspsdb$V228P), emd.dis(blspsdb$casament, wvspsdb$V228Q),
+                   emd.dis(blspsdb$aborto, wvspsdb$V228R), emd.dis(blspsdb$pm12, wvspsdb$Y001), emd.dis(blspsdb$enviro, wvspsdb$V81))
+
+wvsclasse <- wvs %>% filter(V239 >= 8)
+
+Analises$classe <- c(emd.dis(bls$lrclass, wvsclasse$V95), emd.dis(bls$renda, wvsclasse$V96), emd.dis(bls$inicpriv, wvsclasse$V97), 
+                     emd.dis(bls$govresp, wvsclasse$V98), emd.dis(bls$concorr, wvsclasse$V99), emd.dis(bls$getrich, wvsclasse$V100),
+                     emd.dis(bls$trabvida, wvsclasse$V101),
+                     emd.dis(bls$ppswitc2, wvsclasse$V228L), emd.dis(bls$onuseg, wvsclasse$V228M), emd.dis(bls$bndes, wvsclasse$V228N),
+                     emd.dis(bls$cotaafro, wvsclasse$V228O), emd.dis(bls$cotrenda, wvsclasse$V228P), emd.dis(bls$casament, wvsclasse$V228Q),
+                     emd.dis(bls$aborto, wvsclasse$V228R), emd.dis(bls$pm12, wvsclasse$Y001), emd.dis(bls$enviro, wvsclasse$V81))
+
+wvseduc <- wvs %>% filter(V248 == 9)
+
+Analises$educ <- c(emd.dis(bls$lrclass, wvseduc$V95), emd.dis(bls$renda, wvseduc$V96), emd.dis(bls$inicpriv, wvseduc$V97), 
+                   emd.dis(bls$govresp, wvseduc$V98), emd.dis(bls$concorr, wvseduc$V99), emd.dis(bls$getrich, wvseduc$V100),
+                   emd.dis(bls$trabvida, wvseduc$V101),
+                   emd.dis(bls$ppswitc2, wvseduc$V228L), emd.dis(bls$onuseg, wvseduc$V228M), emd.dis(bls$bndes, wvseduc$V228N),
+                   emd.dis(bls$cotaafro, wvseduc$V228O), emd.dis(bls$cotrenda, wvseduc$V228P), emd.dis(bls$casament, wvseduc$V228Q),
+                   emd.dis(bls$aborto, wvseduc$V228R), emd.dis(bls$pm12, wvseduc$Y001), emd.dis(bls$enviro, wvseduc$V81))
+
+####
+#Figura 2
+
+Graf10 <- function(VB, VW, Lab1, Lab10, Numero, Titulo) {
+ggplot() + geom_density(data = bls, aes(x = VB, fill = 'black'), alpha = .3) +
+  geom_density(data = wvs, aes(x = VW, fill = 'red'), alpha = .3) + 
+  scale_x_continuous(name = "",breaks = c(2/9,7/9),limits = c(0,1), labels = c(paste0("<<",Lab1), Lab10), expand = c(.01,.01)) +
+  scale_fill_identity(name = "", labels = c("Parlamentares","Eleitoras")) +
+  scale_y_continuous(name = "", breaks = NULL, limits = c(0,5), labels = NULL, expand = c(.01,.01)) +
+  annotate("text",x=.65,y=4,label= paste("EMD =", round(Analises$geral[Numero], 3)),family="serif",size=4) +
+  ggtitle(Titulo) +
+  theme_bw(base_size = 8) + theme(legend.position = c(.4,.5), legend.background = element_blank(), legend.text = element_text(size = 7), plot.title = element_text(size = 7, hjust = 0.5, face = "bold"), plot.margin = unit(c(0,.1,0,.1), "cm"), axis.text.x = element_text(size = 7))
+}
+
+Graf5 <- function(VB, VW, Numero, Titulo) {
+  ggplot() + geom_density(data = bls, aes(x = VB, fill = 'black'), alpha = .3) +
+    geom_density(data = wvs, aes(x = VW, fill = 'red'), alpha = .3) + 
+    scale_x_continuous(name = "",breaks = c(2/9,7/9),limits = c(0,1), labels = c("<<Discorda\n","Concorda>>\n"), expand = c(.01,.01)) +
+    scale_fill_identity(name = "", labels = c("Parlamentares","Eleitores")) +
+    scale_y_continuous(name = "", breaks = NULL, limits = c(0,5), labels = NULL, expand = c(.01,.01)) +
+    annotate("text",x=.65,y=4,label= paste("EMD =", round(Analises$geral[Numero], 3)),family="serif",size=4) +
+    ggtitle(Titulo) +
+    theme_bw(base_size = 8) + theme(legend.position = c(.85,.85), legend.background = element_blank(), plot.title = element_text(size = 7, hjust = 0.5, face = "bold"), plot.margin = unit(c(0,.1,0,.1), "cm"), axis.text.x = element_text(size = 7))
+}
+
+Geral1 <- Graf10(bls$lrclass, wvs$V95, "Esquerda\n", "Direita>>\n", 1, "Auto-posicionamento ideol?gico\n")
+Geral2 <- Graf10(bls$renda, wvs$V96, "Deve ser\nmais igualit?ria", "Diferen?as>>\nincentivam esfor?o", 2, "Distribui??o de renda\n")
+Geral3 <- Graf10(bls$inicpriv, wvs$V97, "Deve ser\niniciativa privada", "Deve ser>>\ndo governo", 3, "Maior participa??o na\nind?stria e com?rcio")
+Geral4 <- Graf10(bls$govresp, wvs$V98, "O Governo", "As pr?prias>>\npessoas", 4, "Respons?vel pelo sustento das pessoas\n")
+
+ggsave("Geral1.pdf", plot = multiplot(Geral1,Geral2,Geral3,Geral4, cols = 4), device = "pdf", width = 8, height = 3, units = "in")
+
+Geral5 <- Graf10(bls$concorr, wvs$V99, "Boa porque\nestimula a trabalhar", "Ruim porque>>\ndesperta o pior", 5, "A concorr?ncia ? uma coisa\n")
+Geral6 <- Graf10(bls$trabvida, wvs$V100, "Sempre vai ter\numa vida melhor", "Nem sempre, pois>>\ndepende de sorte", 6, "No longo prazo, quem trabalha muito\n")
+Geral7 <- Graf10(bls$getrich, wvs$V101, "S? se pode\n?s custas dos outros", "Crescimento pode>>\nbeneficiar a todos", 7, "Enriquecimento\n") +   scale_fill_identity(name = "", labels = c("Parlamentares","Eleitoras"), guide = "legend")
+Esp8 <- Graf5(bls$ppswitc2, wvs$V228L, 8, "Parlamentar deveria perder\no mandato se trocar de partido")
+
+ggsave("Geral2.pdf", plot = multiplot(Geral5, Geral6, Geral7, Esp8, cols = 4), device = "pdf", width = 8, height = 3, units = "in")
+
+Esp9 <- Graf5(bls$onuseg, wvs$V228M, 9, "Brasil deve participar de miss?es\nda ONU para entrar no CS")
+Esp10 <- Graf5(bls$bndes, wvs$V228N, 10, "BNDES deve priorizar ativ. no\nBrasil e n?o no exterior")
+Esp11 <- Graf5(bls$cotaafro, wvs$V228O, 11, "? justo que univ. p?blicas\nreservem vagas p/ afrodescendentes")
+Esp12 <- Graf5(bls$cotrenda, wvs$V228P, 12, "? justo que univ. p?blicas\nreservem vagas p/ baixa renda")
+
+ggsave("Geral3.pdf", plot = multiplot(Esp9, Esp10, Esp11, Esp12, cols = 4), device = "pdf", width = 8, height = 3, units = "in")
+
+Esp13 <- Graf5(bls$casament, wvs$V228Q, 13, "Casais homossexuais devem\nter o direito de se casar")
+Esp14 <- Graf5(bls$aborto, wvs$V228R, 14, "O aborto deve ser proibido\nem qualquer circunst?ncia")
+PM15 <- Graf5(bls$pm12, wvs$Y001, 15, "?ndice de p?s-materialismo\n") + scale_x_continuous(name = "",breaks = c(2/9,7/9),limits = c(0,1), labels = c("<<Materialista\n","P?s-materialista>>\n"), expand = c(.01,.01))
+MA16 <- Graf5(bls$enviro, wvs$V81, 16, "Meio-ambiente x crescimento\n") + scale_x_continuous(name = "",breaks = c(2/9,7/9),limits = c(0,1), labels = c("<<Meio ambiente deve\nser prioridade","Cresc. econ?mico>>\ndeve ser prioridade"), expand = c(.01,.01))
+
+ggsave("Geral4.pdf", plot = multiplot(Esp13, Esp14, PM15, MA16, cols = 4), device = "pdf", width = 8, height = 3, units = "in")
+
+#Figura 3
+PT <- ggplot(Analises, aes(x = nomes, y = PT - geral)) + geom_point() + 
+  coord_flip() + geom_hline(yintercept = 0, lty = 2) + theme_bw(base_size = 10) + theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  scale_y_continuous(name = "", limits = c(-.4,.4)) + scale_x_discrete(name = "", labels = NULL, limits = rev(Analises$nomes)) + ggtitle("PT")
+
+PSDB <- ggplot(Analises, aes(x = nomes, y = PSDB - geral)) + geom_point() + 
+  coord_flip() + geom_hline(yintercept = 0, lty = 2) + theme_bw(base_size = 10) + theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  scale_y_continuous(name = "", limits = c(-.4,.4)) + scale_x_discrete(name = "", labels = NULL, limits = rev(Analises$nomes)) + ggtitle("PSDB")
+
+Classe <- ggplot(Analises, aes(x = nomes, y = classe - geral)) + geom_point() + 
+  coord_flip() + geom_hline(yintercept = 0, lty = 2) + theme_bw(base_size = 10) + theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  scale_y_continuous(name = "", limits = c(-.4,.4)) + scale_x_discrete(name = "", labels = NULL, limits = rev(Analises$nomes)) + ggtitle("Alta renda")
+
+Educ <- ggplot(Analises, aes(x = nomes, y = educ - geral)) + geom_point() + 
+  coord_flip() + geom_hline(yintercept = 0, lty = 2) + theme_bw(base_size = 10) + theme(plot.title = element_text(hjust = 0.5, face = "bold")) +
+  scale_y_continuous(name = "", limits = c(-.4,.4)) + scale_x_discrete(name = "", labels = NULL, limits = rev(Analises$nomes)) + ggtitle("Ens. Superior")
+
+
+#Comparacao economica eseb wvs
+eseb <- read_sav("1_03928.sav")
+
+wvs %<>% select(V96:V101)
+eseb %<>% select(PC12A:PC12F)
+
+is.na(eseb) <- (eseb > 11)
+is.na(wvs) <- (wvs < 0)
+
+for (i in 1:6) {
+  print(emd.dis(eseb[,i], wvs[,i]))
+}
+
+distance <- c(emd.dis(eseb$PC12A, wvs$V96), emd.dis(eseb$PC12B, wvs$V97),
+              emd.dis(eseb$PC12C, wvs$V98), emd.dis(eseb$PC12D, wvs$V99),
+              emd.dis(eseb$PC12E, wvs$V100), emd.dis(eseb$PC12F, wvs$V101))
+
+#Checando igualdade de ordens entre bases WVS e Brasil
+iguais <- c(intersect(names(brasil), names(wvs)))
+
+is.na(wvs) <- wvs < 0
+
+a <- list()
+for (i in 1:20){
+  a[i] <- identical(as.matrix(select(wvs, iguais[i])), as.matrix(select(brasil, iguais[i])))
+}
+
+
+#
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+#LIMPAR
+rm(list=ls()[!(ls() %in% c("Analises", "bls", "wvs", "emd.dis", "Graf10", "Graf5", "multiplot"))])

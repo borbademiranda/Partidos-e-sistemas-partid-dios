@@ -196,9 +196,97 @@ table(essrrpwest$govnotint)
 vars <- c("cntry", "cname", "essround", "vote", "clsprty", "mmbprty", 
           "party_voted", "lrgen", "supportEU", "supportEP", "rejectdiffimmig",
           "rejectsameimmig", "rejectpoorimmig", "immgcntrybetter", "antirefugee", 
-          "assimil", "envnotimp", "civliberties", "libcustoms")
+          "assimil", "envnotimp", "civliberties", "libcustoms", "religious",
+          "govnotint")
 
 essrrpw2 <- essrrpwest[vars]
 
+##### treating variables of the esswest dataset #####
+##### treating variables #####
+
+# renaming and reshaping variable left-right scale
+esswest$lrgen <- esswest$lrscale
+esswest$lrgen[esswest$lrgen > 10] <- NA
+esswest$lrgen <- esswest$lrgen / 10
+table(esswest$lrgen)
+
+# renaming and adjusting values for support for European integration
+esswest$euftf[esswest$euftf > 10] <- NA
+esswest$supportEU <- esswest$euftf / 10
+table(esswest$supportEU)
+
+# renaming and reshaping values for "trust in European Parliament"
+# (used as proxy to support for Europarliament)
+esswest$trstep[esswest$trstep > 10] <- NA
+esswest$supportEP <- esswest$trstep / 10
+table(esswest$supportEP)
+
+# allow many or few immigrants of different ethnic groups
+esswest$imdfetn[esswest$imdfetn > 4] <- NA
+esswest$rejectdiffimmig <- (esswest$imdfetn - 1) / 3
+table(esswest$rejectdiffimmig)
+
+# allow many or few immigrants of the same ethnic group
+esswest$imsmetn[esswest$imsmetn > 4] <- NA
+esswest$rejectsameimmig <- (esswest$imsmetn - 1) / 3
+table(esswest$rejectsameimmig)
+
+# allow many or few immigrants from poorer countries outside Europe
+esswest$impcntr[esswest$impcntr > 4] <- NA
+esswest$rejectpoorimmig <- (esswest$impcntr - 1) / 3
+table(esswest$rejectpoorimmig)
+
+# immigration makes country a worse or better place to live
+esswest$imwbcnt[esswest$imwbcnt > 10] <- NA
+esswest$immgcntrybetter <- esswest$imwbcnt / 10
+table(esswest$immgcntrybetter)
+
+# national culture is undermined or enriched by immigrants
+# proxy to favours multiculturalism or assimilation
+esswest$imueclt[esswest$imueclt > 10] <- NA
+esswest$assimil <- esswest$imueclt / 10
+table(esswest$assimil)
+
+# take care of environment and nature or it doesn't matter
+esswest$impenv[esswest$impenv > 6] <- NA
+esswest$envnotimp <- (esswest$impenv - 1) / 5
+table(esswest$envnotimp)
+
+# promotes civil liberties instead of tough policies on crime
+esswest$ipstrgv[esswest$ipstrgv > 6] <- NA
+esswest$civliberties <- (esswest$ipstrgv - 1) / 5
+table(esswest$civliberties)
+
+# importance to follow traditions and customs
+# (proxy to accesswest how much the repondent favours liberal policies)
+esswest$imptrad[esswest$imptrad > 6] <- NA
+esswest$libcustoms <- (esswest$imptrad - 1) / 5
+table(esswest$libcustoms)
+
+# how religious you are
+esswest$rlgdgr[esswest$rlgdgr > 10] <- NA
+esswest$religious <- esswest$rlgdgr / 10
+table(esswest$religious)
+
+# government should be generous judging applications for refugees
+esswest$gvrfgap[esswest$gvrfgap > 5] <- NA
+esswest$antirefugee <- (esswest$gvrfgap - 1) / 4
+table(esswest$antirefugee)
+
+# government should reduce differences in income levels
+esswest$gincdif[esswest$gincdif > 5] <- NA
+esswest$govnotint <- (esswest$gincdif - 1) / 4
+table(esswest$govnotint)
+
+##### making dataset with only interest variables #####
+vars <- c("cntry", "cname", "essround", "vote", "clsprty", "mmbprty", "lrgen", "supportEU", "supportEP", "rejectdiffimmig",
+          "rejectsameimmig", "rejectpoorimmig", "immgcntrybetter", "antirefugee", 
+          "assimil", "envnotimp", "civliberties", "libcustoms", "religious",
+          "govnotint")
+
+esswest2 <- esswest[vars]
+
+
 # saving dataset
+write.csv(esswest2, "ess_westeu_intvar.csv")
 write.csv(essrrpw2, "ess_rrpp_westeu_intvar.csv")

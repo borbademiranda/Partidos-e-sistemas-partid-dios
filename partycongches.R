@@ -11,13 +11,127 @@ ches <- read.csv("1999-2014_CHES_dataset_means.csv")
 # filtering for EU members only
 ches0214 <- ches[ches$year >= 2002 | ches$eumember == 1,]
 
+# filtering by west european countries 
+cheswest <- ches0214[ches0214$eastwest == "west",]
+
 # filtering only radical right parties
 rrp <- ches0214[ches0214$family == "rad right" | ches0214$party == "LN",]
 
-# filtering for west european countries
+# filtering by west european countries
 rrpwest <- rrp[rrp$eastwest == "west",]
 
-##### recoding interest variables ####
+##### recoding interest variables of the ches dataset #####
+# overall position regarding EU integration
+cheswest$position <- as.numeric(as.character(cheswest$position))
+cheswest$fav_intEU <- (cheswest$position - 1) / 6
+
+# position on the powers of the European Parliament
+cheswest$eu_ep <- as.numeric(as.character(cheswest$eu_ep))
+cheswest$fav_ep_power <- (cheswest$eu_ep - 1) / 6
+
+# left-right general
+cheswest$lrgen <- (as.numeric(as.character(cheswest$lrgen)) / 10)
+
+# left-right economy
+cheswest$lr_econ <- (as.numeric(as.character(cheswest$lrecon)) / 10)
+
+# left-right economy salience
+cheswest$lr_econ_slc <- (as.numeric(as.character(cheswest$lrecon_salience)) / 10)
+
+# position in therms of freedoms and rights (libertarian/postmaterialist and 
+# traditional/authoritarian dimensions)
+cheswest$postmat_trad <- (as.numeric(as.character(cheswest$galtan)) / 10)
+
+# libertarian/postmaterialist and traditional/authoritarian dimension salience
+cheswest$postmat_trad_slc <- (as.numeric(as.character(cheswest$galtan_salience)) 
+                             / 10)
+
+# improving services or reduce taxes
+cheswest$spend_or_taxes <- (as.numeric(as.character(cheswest$spendvtax)) / 10)
+
+# improving services or reduce taxes salience
+cheswest$spend_or_taxes_slc <- (as.numeric(as.character(
+  cheswest$spendvtax_salience)) / 10)
+
+# deregulation of markets
+cheswest$dereg_mkt <- (as.numeric(as.character(cheswest$deregulation)) / 10)
+
+# deregulation of markets salience
+cheswest$dereg_mkt_slc <- (as.numeric(as.character(cheswest$dereg_salience)) / 10)
+
+# economic intervention
+cheswest$stateinterv <- (as.numeric(as.character(cheswest$econ_interven)) / 10)
+
+# civil liberties or law and order
+cheswest$laworder <- (as.numeric(as.character(cheswest$civlib_laworder)) / 10)
+
+# civil liberties or law and order salience
+cheswest$laworder_slc <- (as.numeric(as.character(cheswest$civlib_salience)) / 10)
+
+# opposition to liberal policies
+cheswest$oppos_libpol <- (as.numeric(as.character(cheswest$sociallifestyle)) / 10)
+
+# opposition to liberal policies salience
+cheswest$oppos_libpol_slc <- (as.numeric(as.character(cheswest$social_salience)) 
+                             / 10)
+
+# religious principles
+cheswest$religious <- (as.numeric(as.character(cheswest$religious_principle)) / 10)
+
+# religious salience
+cheswest$religion_slc <- (as.numeric(as.character(cheswest$relig_salience)) / 10)
+
+# tough policy on immigration
+cheswest$reject_immig <- (as.numeric(as.character(cheswest$immigrate_policy)) / 10) 
+
+# immigration policy salience
+cheswest$immigra_salience <- (as.numeric(as.character(cheswest$immigra_salience)) 
+                             / 10)
+
+# favours assimilation/integration of immigrants
+cheswest$assimil <- (as.numeric(as.character(cheswest$multiculturalism)) / 10)
+
+# salience of assimilation/integration of immigrants
+cheswest$assimil_slc <- (as.numeric(as.character(cheswest$multicult_salience)) 
+                        / 10)
+
+# economic growth have to be carried out event at the cost of environment
+cheswest$envnotimp <- (as.numeric(as.character(cheswest$environment)) / 10)
+
+# environment salience
+cheswest$env_slc <- (as.numeric(as.character(cheswest$enviro_salience)) / 10)
+
+# how much the party favours cosmopolitanism or nationalism
+cheswest$cosmop_nation <- (as.numeric(as.character(cheswest$cosmo)) / 10) 
+
+# cosmopolitanism vs nationalism salience
+cheswest$cosmop_nation_slc <- (as.numeric(as.character(cheswest$cosmo_salience))
+                              / 10)
+
+# nationalism
+cheswest$nation <- (as.numeric(as.character(cheswest$nationalism)) / 10)
+
+# most important issues
+cheswest$mip_one <- as.character(cheswest$mip_one)
+cheswest$mip_two <- as.character(cheswest$mip_two)
+cheswest$mip_three <- as.character(cheswest$mip_three)
+
+##### creating and saving the dataset with only the inteerest variables #####
+
+# creating "vars" object
+vars <- c("country", "year", "party", "vote", "seat", "electionyear", 
+          "epvote", "fav_intEU", "fav_ep_power", "lrgen", "lr_econ", 
+          "lr_econ_slc", "postmat_trad", "postmat_trad_slc", "spend_or_taxes", 
+          "spend_or_taxes_slc", "dereg_mkt", "dereg_mkt_slc", "stateinterv", 
+          "laworder", "laworder", "laworder_slc", "oppos_libpol", 
+          "oppos_libpol_slc", "religious", "religion_slc", "reject_immig", 
+          "immigra_salience", "assimil", "assimil_slc", "envnotimp", "env_slc", 
+          "cosmop_nation", "cosmop_nation_slc", "nation", "mip_one", "mip_two", 
+          "mip_three")
+
+cheswest2 <- cheswest[vars]
+
+##### recoding interest variables of the rrpwest dataset #####
 
 # overall position regarding EU integration
 rrpwest$position <- as.numeric(as.character(rrpwest$position))
@@ -138,5 +252,7 @@ vars <- c("country", "year", "party", "vote", "seat", "electionyear",
 
 chesrrpwest <- rrpwest2[vars]
 
-# saving final dataset
+##### saving final datasets #####
+# general dataset
+write.csv(cheswest2, "ches_westeu_intvar.csv")
 write.csv(chesrrpwest, "ches_rrpp_westeu_intvar.csv")

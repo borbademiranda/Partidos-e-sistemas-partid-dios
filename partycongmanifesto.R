@@ -1,3 +1,5 @@
+library()
+
 # setting working directory
 setwd("C:/Users/test/Desktop/manifestoproject")
 
@@ -9,22 +11,40 @@ mp_setapikey("manifesto_apikey.txt")
 manifesto <- read.csv("mpdataset2018.csv", sep = ",")
 
 # excluding non-utilized countries
-eu <- manifesto[!(manifesto$country %in% c("13", "23", "34", "54", "55", "61", 
-                                           "62", "63", "64", "71", "72", "73", 
-                                           "74", "75", "76", "77", "79", "78", 
-                                           "80", "81", "84", "87", "89", "90", 
-                                           "91", "93", "94", "95", "96", "98", 
-                                           "113", "171", "181")),
-                           ]
+eu <- manifesto[manifesto$countryname %in% c("Austria", "Belgium", "Germany", "Denmark",
+                                        "Finland", "France", "United Kingdom",
+                                        "Greece", "Italy", "Netherlands", "Sweden"),]
 
-# selecting data from 2012
-eu2012 <- eu[eu$date >= 201201,]
+# selecting data from 2002
+eu2002 <- eu[eu$date >= 200201,]
 
-# selecting nationalist and special issue parties
-eu2012nat <- eu2012[eu2012$parfam %in% c(70, 95),]
+# selecting parties for analysis
+rrpp02 <- eu2002[eu2002$partyabbrev %in% c("DF", "SD", "FN", "PVV", "LN",
+                                         "XA", "FPÃ–", "UKIP", "PS", "AfD", 
+                                         "VB"),]
 
-# selecting right parties
-eu2012right <- eu2012nat[eu2012nat$rile >= 0,]
+# selecting interest variables
+vars <- c("country", "countryname", "edate", "date", "partyname", "partyabbrev", 
+          "coderyear", "pervote", "presvote", "absseat", "absseat", "rile", "planeco", 
+          "markeco", "welfare", "per102", "per109", "per110", "per201", 
+          "per305", "per401", "per402", "per403", "per501", "per503", "per601", 
+          "per603", "per605", "per608", "per7062", "per201_2", "per202_4", 
+          "per305_3", "per601_1", "per601_2", "per605_1", "per608_1", "per608_2")
+
+man_iv <- rrpp02[vars]
+
+
+# renaming error values for the variable "partyabbrev"
+man_iv$partyabbrev <- as.character(man_iv$partyabbrev)
+man_iv$partyabbrev[man_iv$partyabbrev == "FPÃ–"] <- "FPO"
+
+# removing non used datasets
+rm(eu, eu2002, manifesto, eu2002nat, man_iv_rrpp, vars)
+
+# loading ess dataset to make the analysis
+setwd("C:/Users/test/Desktop/2018.2 - Partidos políticos e sistemas partidários/scripts")
+
+ess <- read.csv("ess_rrpp_westeu_intvar.csv")
 
 # test analysis
 
