@@ -1,9 +1,12 @@
 library(tidyverse)
 library(ggplot2)
 library(emdist)
-install.packages("corrgram")
+library(haven)
+library(magrittr)
 library(corrgram)
 library(psych)
+
+setwd("C:/Users/test/Desktop/2018.2 - Partidos políticos e sistemas partidários/scripts")
 
 # loading datasets
 ches <- read.csv("ches_rrpp_westeu_intvar.csv")
@@ -17,7 +20,7 @@ emd.dis <- function(var1, var2){
   Y <- as.matrix(var2[which(is.na(var2) == F)])
   weight.x <- rep(1/nrow(X),nrow(X))
   weight.y <- rep(1/nrow(Y),nrow(Y))
-  emdw(X, weight.x, Y, weight.y, dist = "manhattan")
+  emdw(X,weight.x,Y,weight.y,dist="manhattan")
 }
 
 ##### joining variables regarding immigration feelings into one variable ##### 
@@ -53,7 +56,7 @@ analysis$EMDGeneral <- c(
   emd.dis(ches$lrgen, ess$lrgen), emd.dis(ches$fav_intEU, ess$supportEU), 
   emd.dis(ches$fav_ep_power, ess$supportEP), emd.dis(ches$postmat_trad, ess$libcustoms),
   emd.dis(ches$reject_immig, ess$rejectdiffimmig), emd.dis(ches$assimil, ess$assimil),
-  emd.dis(ches$envnotimp, ess$envnotimp), emd.dis(ches$laworder, ess$laworder),
+  emd.dis(ches$envnotimp, ess$envnotimp), emd.dis(ches$laworder, ess$civliberties),
   emd.dis(ches$oppos_libpol, ess$libcustoms), emd.dis(ches$nation, ess$immgcntrybetter),
   emd.dis(ches$religious, ess$religious), emd.dis(ches$dereg_mkt, ess$govnotint)
                          )
@@ -103,8 +106,8 @@ gen7 <- Graf10(ches$envnotimp, ess$envnotimp, "Important to take care of the env
                "Environment is not that important", 7, "Importance to take care of the environment")
 
 # promotion of civil liberties or tough measures to fight crime
-ess$laworder <- max(ess$civliberties, na.rm = T) - ess$civliberties
-gen8 <- Graf10(ches$laworder, ess$laworder, "Promotion of civil liberties\n", 
+ess$civliberties <- max(ess$civliberties, na.rm = T) - ess$civliberties
+gen8 <- Graf10(ches$laworder, ess$civliberties, "Promotion of civil liberties\n", 
                "Promotion of tough policies to fight crime", 8, "Promotion of civil liberties or tough measures to fight crime") +
   scale_fill_identity(name = "", labels = c("Parties","Voters"), guide = "legend")
 
