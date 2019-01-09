@@ -14,6 +14,9 @@ ches0214 <- ches[ches$year >= 2002 | ches$eumember == 1,]
 # filtering by west european countries 
 cheswest <- ches0214[ches0214$eastwest == "west",]
 
+# filtering by party in government
+gov <- cheswest[cheswest$govt %in% c(".5", "in government"),]
+
 # filtering only radical right parties
 rrp <- ches0214[ches0214$family == "rad right" | ches0214$party == "LN",]
 
@@ -252,7 +255,120 @@ vars <- c("country", "year", "party", "vote", "seat", "electionyear",
 
 chesrrpwest <- rrpwest2[vars]
 
+##### recoding variables of the dataset with only parties in government #####
+
+# overall position regarding EU integration
+gov$position <- as.numeric(as.character(gov$position))
+gov$fav_intEU <- (gov$position - 1) / 6
+
+# position on the powers of the European Parliament
+gov$eu_ep <- as.numeric(as.character(gov$eu_ep))
+gov$fav_ep_power <- (gov$eu_ep - 1) / 6
+
+# left-right general
+gov$lrgen <- (as.numeric(as.character(gov$lrgen)) / 10)
+
+# left-right economy
+gov$lr_econ <- (as.numeric(as.character(gov$lrecon)) / 10)
+
+# left-right economy salience
+gov$lr_econ_slc <- (as.numeric(as.character(gov$lrecon_salience)) / 10)
+
+# position in therms of freedoms and rights (libertarian/postmaterialist and 
+# traditional/authoritarian dimensions)
+gov$postmat_trad <- (as.numeric(as.character(gov$galtan)) / 10)
+
+# libertarian/postmaterialist and traditional/authoritarian dimension salience
+gov$postmat_trad_slc <- (as.numeric(as.character(gov$galtan_salience)) 
+                             / 10)
+
+# improving services or reduce taxes
+gov$spend_or_taxes <- (as.numeric(as.character(gov$spendvtax)) / 10)
+
+# improving services or reduce taxes salience
+gov$spend_or_taxes_slc <- (as.numeric(as.character(
+  gov$spendvtax_salience)) / 10)
+
+# deregulation of markets
+gov$dereg_mkt <- (as.numeric(as.character(gov$deregulation)) / 10)
+
+# deregulation of markets salience
+gov$dereg_mkt_slc <- (as.numeric(as.character(gov$dereg_salience)) / 10)
+
+# economic intervention
+gov$stateinterv <- (as.numeric(as.character(gov$econ_interven)) / 10)
+
+# civil liberties or law and order
+gov$laworder <- (as.numeric(as.character(gov$civlib_laworder)) / 10)
+
+# civil liberties or law and order salience
+gov$laworder_slc <- (as.numeric(as.character(gov$civlib_salience)) / 10)
+
+# opposition to liberal policies
+gov$oppos_libpol <- (as.numeric(as.character(gov$sociallifestyle)) / 10)
+
+# opposition to liberal policies salience
+gov$oppos_libpol_slc <- (as.numeric(as.character(gov$social_salience)) 
+                             / 10)
+
+# religious principles
+gov$religious <- (as.numeric(as.character(gov$religious_principle)) / 10)
+
+# religious salience
+gov$religion_slc <- (as.numeric(as.character(gov$relig_salience)) / 10)
+
+# tough policy on immigration
+gov$reject_immig <- (as.numeric(as.character(gov$immigrate_policy)) / 10) 
+
+# immigration policy salience
+gov$immigra_salience <- (as.numeric(as.character(gov$immigra_salience)) 
+                             / 10)
+
+# favours assimilation/integration of immigrants
+gov$assimil <- (as.numeric(as.character(gov$multiculturalism)) / 10)
+
+# salience of assimilation/integration of immigrants
+gov$assimil_slc <- (as.numeric(as.character(gov$multicult_salience)) 
+                        / 10)
+
+# economic growth have to be carried out event at the cost of environment
+gov$envnotimp <- (as.numeric(as.character(gov$environment)) / 10)
+
+# environment salience
+gov$env_slc <- (as.numeric(as.character(gov$enviro_salience)) / 10)
+
+# how much the party favours cosmopolitanism or nationalism
+gov$cosmop_nation <- (as.numeric(as.character(gov$cosmo)) / 10) 
+
+# cosmopolitanism vs nationalism salience
+gov$cosmop_nation_slc <- (as.numeric(as.character(gov$cosmo_salience))
+                              / 10)
+
+# nationalism
+gov$nation <- (as.numeric(as.character(gov$nationalism)) / 10)
+
+# most important issues
+gov$mip_one <- as.character(gov$mip_one)
+gov$mip_two <- as.character(gov$mip_two)
+gov$mip_three <- as.character(gov$mip_three)
+
+##### creating and saving the dataset with only the inteerest variables #####
+
+# creating "vars" object
+vars <- c("country", "year", "party", "vote", "seat", "electionyear", 
+          "epvote", "fav_intEU", "fav_ep_power", "lrgen", "lr_econ", 
+          "lr_econ_slc", "postmat_trad", "postmat_trad_slc", "spend_or_taxes", 
+          "spend_or_taxes_slc", "dereg_mkt", "dereg_mkt_slc", "stateinterv", 
+          "laworder", "laworder", "laworder_slc", "oppos_libpol", 
+          "oppos_libpol_slc", "religious", "religion_slc", "reject_immig", 
+          "immigra_salience", "assimil", "assimil_slc", "envnotimp", "env_slc", 
+          "cosmop_nation", "cosmop_nation_slc", "nation", "mip_one", "mip_two", 
+          "mip_three")
+
+gov2 <- gov[vars]
+
 ##### saving final datasets #####
 # general dataset
 write.csv(cheswest2, "ches_westeu_intvar.csv")
+write.csv(gov2, "ches_gov_westeu_intvar.csv")
 write.csv(chesrrpwest, "ches_rrpp_westeu_intvar.csv")
