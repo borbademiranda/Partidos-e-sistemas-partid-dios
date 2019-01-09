@@ -75,22 +75,24 @@ Graf10 <- function(VB, VW, Lab1, Lab10, Numero, Titulo) {
     scale_x_continuous(name = "",breaks = c(2/9,7/9),limits = c(0,1), labels = c(paste0("<<",Lab1), Lab10), expand = c(.01,.01)) +
     scale_fill_identity(name = "", labels = c("Parties", "Voters")) +
     scale_y_continuous(name = "", breaks = NULL, limits = c(0,7), labels = NULL, expand = c(.01,.01)) +
-    annotate("text",x=.35,y=4,label= paste("EMD =", round(analysis$EMDGeneral[Numero], 3)),family="serif",size=4) +
+    annotate("text",x=.35,y=5,label= paste("EMD =", round(analysis$EMDGeneral[Numero], 3)),family="serif",size=4) +
     ggtitle(Titulo) +
     theme_bw(base_size = 8) + theme(legend.position = c(.4,.5), legend.background = element_blank(), legend.text = element_text(size = 7), plot.title = element_text(size = 10, hjust = 0.5, face = "bold"), plot.margin = unit(c(0,.1,0,.1), "cm"), axis.text.x = element_text(size = 7))
 }
 
 # plot to EMD in left-right general position
-gen1 <- Graf10(ches$lrgen, ess$lrgen, "Left\n", "Right\n", 1, "Left-Right Self-positionment")
+gen1 <- Graf10(ches$lrgen, ess$lrgen, "Left\n", "Right>>\n", 1, "Left-Right Self-positionment") +
+  scale_fill_identity(name = "Total time lapse", labels = c("Parties","Voters"), guide = "legend")
+
 
 # support for EU integration
 gen2 <- Graf10(ches$fav_intEU, ess$supportEU, "Disapprove EU integration\n", 
-               "Support EU integration", 2, "Support to EU integration process")
+               "Support EU integration>>\n", 2, "Support to EU integration process")
 
 # approves European Parliament powers
 gen3 <- Graf10(ches$fav_ep_power, ess$supportEP, "Does not support the European Parliament\n", 
                "Supports the European Parliament>>\n", 3, 
-               "How much support the powers of the European Parliament")
+               "Support powers of the European Parliament")
 
 # Post-materialist or traditional values
 ess$libcustoms <- max(ess$libcustoms, na.rm = T) - ess$libcustoms
@@ -100,12 +102,12 @@ gen4 <- Graf10(ches$postmat_trad, ess$libcustoms, "Post-materialist values\n",
 # anti-immigrant feelings
 gen5 <- Graf10(ches$reject_immig, ess$rejectdiffimmig, "Allow many immigrants\n",
                "Allow few immigrants>>\n", 5, 
-               "Opposition to immigrants belonging to the same ethnic group")
+               "Opposition to immigrants")
 
 # multiculturalism (separation of people belonging to different cultures) or assimilation
 ess$assimil <- max(ess$assimil, na.rm = T) - ess$assimil
 gen6 <- Graf10(ches$assimil, ess$assimil, "Multiculturalism\n", "Assimilation>>\n", 6,
-               "Multiculturalism (separation of people belonging to different cultures) or assimilation")
+               "Multiculturalism or assimilation")
 
 # importance of environment despite economic development
 gen7 <- Graf10(ches$envnotimp, ess$envnotimp, "Important to take care of the environment\n", 
@@ -114,12 +116,10 @@ gen7 <- Graf10(ches$envnotimp, ess$envnotimp, "Important to take care of the env
 # promotion of civil liberties or tough measures to fight crime
 ess$civliberties <- max(ess$civliberties, na.rm = T) - ess$civliberties
 gen8 <- Graf10(ches$laworder, ess$civliberties, "Promotion of civil liberties\n", 
-               "Promotion of tough policies to fight crime", 8, "Promotion of civil liberties or tough measures to fight crime") +
-  scale_fill_identity(name = "", labels = c("Parties","Voters"), guide = "legend")
-
+               "Tough policies to fight crime>>\n", 8, "Law and Order")
 # opposition or agreement to liberal policies in social lifestyle
 gen9 <- Graf10(ches$oppos_libpol, ess$libcustoms, "Supports liberal lifestyle\n",
-               "Supports traditional lifestyle>>\n", 9, "Opposition or agreement to liberal policies in social lifestyle")
+               "Supports traditional lifestyle>>\n", 9, "Social lifestyle")
 
 # favours cosmopolitanism or nationalism
 ess$immgcntrybetter <- max(ess$immgcntrybetter, na.rm = T)
@@ -151,22 +151,23 @@ Graf10b <- function(VB, VW, Lab1, Lab10, Numero, Titulo) {
     scale_x_continuous(name = "",breaks = c(2/9,7/9),limits = c(0,1), labels = c(paste0("<<",Lab1), Lab10), expand = c(.01,.01)) +
     scale_fill_identity(name = "", labels = c("Parties", "Voters")) +
     scale_y_continuous(name = "", breaks = NULL, limits = c(0,7), labels = NULL, expand = c(.01,.01)) +
-    annotate("text",x=.35,y=4,label= paste("EMD =", round(analysis$EMDbefore08[Numero], 3)),family="serif",size=4) +
+    annotate("text",x=.35,y=5,label= paste("EMD =", round(analysis$EMDbefore08[Numero], 3)),family="serif",size=4) +
     ggtitle(Titulo) +
     theme_bw(base_size = 8) + theme(legend.position = c(.4,.5), legend.background = element_blank(), legend.text = element_text(size = 7), plot.title = element_text(size = 10, hjust = 0.5, face = "bold"), plot.margin = unit(c(0,.1,0,.1), "cm"), axis.text.x = element_text(size = 7))
 }
 
 # plot to EMD in left-right general position
-before1 <- Graf10b(ches0208$lrgen, ess0208$lrgen, "Left\n", "Right\n", 1, "Left-Right Self-positionment")
+before1 <- Graf10b(ches0208$lrgen, ess0208$lrgen, "Left\n", "Right>>\n", 1, "Left-Right Self-positionment") +
+  scale_fill_identity(name = "Before 2008", labels = c("Parties","Voters"), guide = "legend")
 
 # support for EU integration
 before2 <- Graf10b(ches0208$fav_intEU, ess0208$supportEU, "Disapprove EU integration\n", 
-               "Support EU integration", 2, "Support to EU integration process0208")
+               "Support EU integration>>\n", 2, "Support to EU integration process")
 
 # approves European Parliament powers
 before3 <- Graf10b(ches0208$fav_ep_power, ess0208$supportEP, "Does not support the European Parliament\n", 
              "Supports the European Parliament>>\n", 3, 
-               "How much support the powers of the European Parliament")
+               "Support powers of the European Parliament")
 
 # Post-materialist or traditional values
 ess0208$libcustoms <- max(ess0208$libcustoms, na.rm = T) - ess0208$libcustoms
@@ -176,22 +177,21 @@ before4 <- Graf10b(ches0208$postmat_trad, ess0208$libcustoms, "Post-materialist 
 # anti-immigrant feelings
 before5 <- Graf10b(ches0208$reject_immig, ess0208$rejectdiffimmig, "Allow many immigrants\n",
                "Allow few immigrants>>\n", 5, 
-               "Opposition to immigrants belonging to the same ethnic group")
+               "Opposition to immigrants")
 
 # multiculturalism (separation of people belonging to different cultures) or assimilation
 ess0208$assimil <- max(ess0208$assimil, na.rm = T) - ess0208$assimil
 before6 <- Graf10b(ches0208$assimil, ess0208$assimil, "Multiculturalism\n", "Assimilation>>\n", 6,
-               "Multiculturalism (separation of people belonging to different cultures) or assimilation")
+               "Multiculturalism or assimilation")
 
 # promotion of civil liberties or tough measures to fight crime
 ess0208$civliberties <- max(ess0208$civliberties, na.rm = T) - ess0208$civliberties
 before8 <- Graf10b(ches0208$laworder, ess0208$civliberties, "Promotion of civil liberties\n", 
-               "Promotion of tough policies to fight crime", 8, "Promotion of civil liberties or tough measures to fight crime") +
-  scale_fill_identity(name = "", labels = c("Parties","Voters"), guide = "legend")
+               "Tough policies to fight crime>>\n", 8, "Law and Order") 
 
 # opposition or agreement to liberal policies in social lifestyle
 before9 <- Graf10b(ches0208$oppos_libpol, ess0208$libcustoms, "Supports liberal lifestyle\n",
-               "Supports traditional lifestyle>>\n", 9, "Opposition or agreement to liberal policies in social lifestyle")
+               "Supports traditional lifestyle>>\n", 9, "Social Lifestyle")
 
 # favours cosmopolitanism or nationalism
 ess0208$immgcntrybetter <- max(ess0208$immgcntrybetter, na.rm = T)
@@ -223,22 +223,23 @@ Graf10c <- function(VB, VW, Lab1, Lab10, Numero, Titulo) {
     scale_x_continuous(name = "",breaks = c(2/9,7/9),limits = c(0,1), labels = c(paste0("<<",Lab1), Lab10), expand = c(.01,.01)) +
     scale_fill_identity(name = "", labels = c("Parties", "Voters")) +
     scale_y_continuous(name = "", breaks = NULL, limits = c(0,7), labels = NULL, expand = c(.01,.01)) +
-    annotate("text",x=.35,y=6,label= paste("EMD =", round(analysis$EMDafter08[Numero], 3)),family="serif",size=4) +
+    annotate("text",x=.35,y=5,label= paste("EMD =", round(analysis$EMDafter08[Numero], 3)),family="serif",size=4) +
     ggtitle(Titulo) +
     theme_bw(base_size = 8) + theme(legend.position = c(.4,.5), legend.background = element_blank(), legend.text = element_text(size = 7), plot.title = element_text(size = 10, hjust = 0.5, face = "bold"), plot.margin = unit(c(0,.1,0,.1), "cm"), axis.text.x = element_text(size = 7))
 }
 
 # plot to EMD in left-right general position
-after1 <- Graf10c(ches0814$lrgen, ess0814$lrgen, "Left\n", "Right\n", 1, "Left-Right Self-positionment")
+after1 <- Graf10c(ches0814$lrgen, ess0814$lrgen, "Left\n", "Right>>\n", 1, "Left-Right Self-positionment") +
+  scale_fill_identity(name = "After 2008", labels = c("Parties","Voters"), guide = "legend")
 
 # support for EU integration
 after2 <- Graf10c(ches0814$fav_intEU, ess0814$supportEU, "Disapprove EU integration\n", 
-                   "Support EU integration", 2, "Support to EU integration process")
+                   "Support EU integration>>\n", 2, "Support to EU integration process")
 
 # approves European Parliament powers
 after3 <- Graf10c(ches0814$fav_ep_power, ess0814$supportEP, "Does not support the European Parliament\n", 
                    "Supports the European Parliament>>\n", 3, 
-                   "How much support the powers of the European Parliament")
+                   "Support powers of the European Parliament")
 
 # Post-materialist or traditional values
 ess0814$libcustoms <- max(ess0814$libcustoms, na.rm = T) - ess0814$libcustoms
@@ -248,22 +249,25 @@ after4 <- Graf10c(ches0814$postmat_trad, ess0814$libcustoms, "Post-materialist v
 # anti-immigrant feelings
 after5 <- Graf10c(ches0814$reject_immig, ess0814$rejectdiffimmig, "Allow many immigrants\n",
                    "Allow few immigrants>>\n", 5, 
-                   "Opposition to immigrants belonging to the same ethnic group")
+                   "Opposition to immigrants")
 
 # multiculturalism (separation of people belonging to different cultures) or assimilation
 ess0814$assimil <- max(ess0814$assimil, na.rm = T) - ess0814$assimil
 after6 <- Graf10c(ches0814$assimil, ess0814$assimil, "Multiculturalism\n", "Assimilation>>\n", 6,
-                   "Multiculturalism (separation of people belonging to different cultures) or assimilation")
+                   "Multiculturalism or assimilation")
+
+# importance of environment despite economic development
+after7 <- Graf10c(ches0814$envnotimp, ess0814$envnotimp, "Important to take care of the environment\n", 
+               "Environment is not that important>>\n", 7, "Importance to take care of the environment")
 
 # promotion of civil liberties or tough measures to fight crime
 ess0814$civliberties <- max(ess0814$civliberties, na.rm = T) - ess0814$civliberties
 after8 <- Graf10c(ches0814$laworder, ess0814$civliberties, "Promotion of civil liberties\n", 
-                   "Promotion of tough policies to fight crime", 8, "Promotion of civil liberties or tough measures to fight crime") +
-  scale_fill_identity(name = "After 2008", labels = c("Parties","Voters"), guide = "legend")
-
+                   "Tough policies to fight crime>>\n", 8, "Law and Order")
+  
 # opposition or agreement to liberal policies in social lifestyle
 after9 <- Graf10c(ches0814$oppos_libpol, ess0814$libcustoms, "Supports liberal lifestyle\n",
-                   "Supports traditional lifestyle>>\n", 9, "Opposition or agreement to liberal policies in social lifestyle")
+                   "Supports traditional lifestyle>>\n", 9, "Social Lifestyle")
 
 # favours cosmopolitanism or nationalism
 ess0814$immgcntrybetter <- max(ess0814$immgcntrybetter, na.rm = T)
@@ -277,3 +281,67 @@ after11 <- Graf10c(ches0814$religious, ess0814$religious, "A little religious\n"
 # market regulation
 after12 <- Graf10c(ches0814$dereg_mkt, ess0814$govnotint, "Supports regulation\n",
                     "Opposes regulation>>\n", 12, "Market regulation")
+
+##### multiplot function #####
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+##### saving datasets #####
+setwd("./complots")
+ggsave("lr.png", plot = multiplot(gen1, before1, after1, cols = 3), 
+       device = "png",  width = 12, height = 3, units = "in")
+ggsave("euint.png", plot = multiplot(gen2, before2, after2, cols = 3), device = "png",
+       width = 12, height = 3, units = "in")
+ggsave("eppower.png", plot = multiplot(gen3, before3, after3, cols = 3), device = "png",
+       width = 12, height = 3, units = "in")
+ggsave("post-trad.png", plot = multiplot(gen4, before4, after4, cols = 3), device = "png",
+       width = 12, height = 3, units = "in")
+ggsave("antimmig.png", plot = multiplot(gen5, before5, after5, cols = 3), 
+       device = "png", width = 12, height = 3, units = "in")
+ggsave("assimil.png", plot = multiplot(gen6, before6, after6, cols = 3),
+       device = "png", width = 12, height = 3, units = "in")
+ggsave("envnotimp.png", plot = multiplot(gen7, after7, cols = 2),
+       device = "png", width = 12, height = 3, units = "in")
+ggsave("laworder.png", plot = multiplot(gen8, before8, after8, cols = 3),
+       device = "png", width = 12, height = 3, units = "in")
+ggsave("tradition.png", plot = multiplot(gen9, before9, after9, cols = 3),
+       device = "png", width = 12, height = 3, units = "in")
+ggsave("cosmop.png", plot = multiplot(gen10, before10, after10, cols = 3),
+       device = "png", width = 12, height = 3, units = "in")
+ggsave("religion.png", plot = multiplot(gen11, before11, after11, cols = 3),
+       device = "png", width = 12, height = 3, units = "in")
+ggsave("market.png", plot = multiplot(gen12, before12, after12, cols = 3),
+       device = "png", width = 12, height = 3, units = "in")
