@@ -127,4 +127,3 @@ gen11 <- Graf10(ches$religious, ess$religious, "A little religious\n", "Very rel
 # market regulation
 gen12 <- Graf10(ches$dereg_mkt, ess$govnotint, "Supports regulation\n",
                 "Opposes regulation>>\n", 12, "Market regulation")
-
