@@ -70,19 +70,41 @@ analysis$EMDGeneral <- c(
 
 ##### plots #####
 Graf10 <- function(VB, VW, Lab1, Lab10, Numero, Titulo) {
-  ggplot() + geom_density(data = ches, aes(x = VB, fill = 'black'), alpha = .3) +
-    geom_density(data = ess, aes(x = VW, fill = 'orange'), alpha = .3) + 
+  ggplot() + geom_density(data = ches, aes(x = VB, fill = 'black'), alpha = .3, adjust = 3) +
+    geom_density(data = ess, aes(x = VW, fill = 'orange'), alpha = .3, adjust = 2) + 
     scale_x_continuous(name = "",breaks = c(2/9,7/9),limits = c(0,1), labels = c(paste0("<<",Lab1), Lab10), expand = c(.01,.01)) +
     scale_fill_identity(name = "", labels = c("Parties", "Voters")) +
-    scale_y_continuous(name = "", breaks = NULL, limits = c(0,7), labels = NULL, expand = c(.01,.01)) +
-    annotate("text",x=.35,y=5,label= paste("EMD =", round(analysis$EMDGeneral[Numero], 3)),family="serif",size=4) +
+    scale_y_continuous(name = "", breaks = NULL, limits = c(0,6), labels = NULL, expand = c(.01,.01)) +
+    annotate("text",x=.35,y=4,label= paste("EMD =", round(analysis$EMDGeneral[Numero], 3)),family="serif",size=4) +
+    ggtitle(Titulo) +
+    theme_bw(base_size = 8) + theme(legend.position = c(.4,.5), legend.background = element_blank(), legend.text = element_text(size = 7), plot.title = element_text(size = 10, hjust = 0.5, face = "bold"), plot.margin = unit(c(0,.1,0,.1), "cm"), axis.text.x = element_text(size = 7))
+}
+
+Graf5 <- function(VB, VW, Lab1, Lab10, Numero, Titulo) {
+  ggplot() + geom_density(data = ches, aes(x = VB, fill = 'black'), alpha = .3, adjust = 8) +
+    geom_density(data = ess, aes(x = VW, fill = 'orange'), alpha = .3, adjust = 3) + 
+    scale_x_continuous(name = "",breaks = c(2/9,7/9),limits = c(0,1), labels = c(paste0("<<",Lab1), Lab10), expand = c(.01,.01)) +
+    scale_fill_identity(name = "", labels = c("Parties", "Voters")) +
+    scale_y_continuous(name = "", breaks = NULL, limits = c(0,6), labels = NULL, expand = c(.01,.01)) +
+    annotate("text",x=.35,y=4,label= paste("EMD =", round(analysis$EMDGeneral[Numero], 3)),family="serif",size=4) +
+    ggtitle(Titulo) +
+    theme_bw(base_size = 8) + theme(legend.position = c(.4,.5), legend.background = element_blank(), legend.text = element_text(size = 7), plot.title = element_text(size = 10, hjust = 0.5, face = "bold"), plot.margin = unit(c(0,.1,0,.1), "cm"), axis.text.x = element_text(size = 7))
+}
+
+Graf10b <- function(VB, VW, Lab1, Lab10, Numero, Titulo) {
+  ggplot() + geom_density(data = ches, aes(x = VB, fill = 'black'), alpha = .3, adjust = 7) +
+    geom_density(data = ess, aes(x = VW, fill = 'orange'), alpha = .3, adjust = 2) + 
+    scale_x_continuous(name = "",breaks = c(2/9,7/9),limits = c(0,1), labels = c(paste0("<<",Lab1), Lab10), expand = c(.01,.01)) +
+    scale_fill_identity(name = "", labels = c("Parties", "Voters")) +
+    scale_y_continuous(name = "", breaks = NULL, limits = c(0,6), labels = NULL, expand = c(.01,.01)) +
+    annotate("text",x=.35,y=4,label= paste("EMD =", round(analysis$EMDGeneral[Numero], 3)),family="serif",size=4) +
     ggtitle(Titulo) +
     theme_bw(base_size = 8) + theme(legend.position = c(.4,.5), legend.background = element_blank(), legend.text = element_text(size = 7), plot.title = element_text(size = 10, hjust = 0.5, face = "bold"), plot.margin = unit(c(0,.1,0,.1), "cm"), axis.text.x = element_text(size = 7))
 }
 
 # plot to EMD in left-right general position
 gen1 <- Graf10(ches$lrgen, ess$lrgen, "Left\n", "Right>>\n", 1, "Left-Right Self-positionment") +
-  scale_fill_identity(name = "Total time lapse", labels = c("Parties","Voters"), guide = "legend")
+  scale_fill_identity(name = "Populist parties", labels = c("Parties","Voters"), guide = "legend")
 
 
 # support for EU integration
@@ -100,13 +122,13 @@ gen4 <- Graf10(ches$postmat_trad, ess$libcustoms, "Post-materialist values\n",
                "Traditional values>>\n", 4, "Post-materialist or Traditional values")
 
 # anti-immigrant feelings
-gen5 <- Graf10(ches$reject_immig, ess$rejectdiffimmig, "Allow many immigrants\n",
+gen5 <- Graf5(ches$reject_immig, ess$rejectdiffimmig, "Allow many immigrants\n",
                "Allow few immigrants>>\n", 5, 
                "Opposition to immigrants")
 
 # multiculturalism (separation of people belonging to different cultures) or assimilation
 ess$assimil <- max(ess$assimil, na.rm = T) - ess$assimil
-gen6 <- Graf10(ches$assimil, ess$assimil, "Multiculturalism\n", "Assimilation>>\n", 6,
+gen6 <- Graf5(ches$assimil, ess$assimil, "Multiculturalism\n", "Assimilation>>\n", 6,
                "Multiculturalism or assimilation")
 
 # importance of environment despite economic development
@@ -118,12 +140,13 @@ ess$civliberties <- max(ess$civliberties, na.rm = T) - ess$civliberties
 gen8 <- Graf10(ches$laworder, ess$civliberties, "Promotion of civil liberties\n", 
                "Tough policies to fight crime>>\n", 8, "Law and Order")
 # opposition or agreement to liberal policies in social lifestyle
+ess$libcustoms <- max(ess$libcustoms, na.rm = T) - ess$libcustoms
 gen9 <- Graf10(ches$oppos_libpol, ess$libcustoms, "Supports liberal lifestyle\n",
                "Supports traditional lifestyle>>\n", 9, "Social lifestyle")
 
 # favours cosmopolitanism or nationalism
-ess$immgcntrybetter <- max(ess$immgcntrybetter, na.rm = T)
-gen10 <- Graf10(ches$nation, ess$immgcntrybetter, "cosmopolitanism\n", 
+ess$immgcntrybetter <- max(ess$immgcntrybetter, na.rm = T) - ess$immgcntrybetter
+gen10 <- Graf10b(ches$nation, ess$immgcntrybetter, "cosmopolitanism\n", 
                 "nationalism>>\n", 10, "Favours cosmopolitanism or nationalism")
 
 # religious principles
