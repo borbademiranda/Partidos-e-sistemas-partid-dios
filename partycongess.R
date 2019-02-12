@@ -1,5 +1,7 @@
 library(tidyverse)
 
+setwd("C:/Users/test/Desktop/2018.2 - Partidos políticos e sistemas partidários/scripts")
+
 # loading ess harmonized 1st to 7th wave
 essharm <- read.csv("ESS1-8e01.csv")
 
@@ -286,7 +288,108 @@ vars <- c("cntry", "cname", "essround", "vote", "clsprty", "mmbprty", "lrgen", "
 
 esswest2 <- esswest[vars]
 
+essexp <- cbind(esswest2, weuvars)
 
 # saving dataset
 write.csv(esswest2, "ess_westeu_intvar.csv")
 write.csv(essrrpw2, "ess_rrpp_westeu_intvar.csv")
+write.csv(essexp, "ess_westeu_intvar_large.csv")
+
+##### merging datasets: rrp dataset with the broader ess dataset #####
+# now I have a full dataset 
+rrp <- read.csv("ess_rrpp_westeu_intvar.csv")
+
+# dropping repeated variables
+rrp2 <- select(rrp, -c("cntry", "cname", "essround", "clsprty", "mmbprty", "lrgen", 
+                       "supportEU", "supportEP", "rejectdiffimmig", "rejectsameimmig", 
+                       "rejectpoorimmig", "immgcntrybetter", "antirefugee", "assimil",
+                       "envnotimp", "civliberties", "libcustoms", "religious", "govnotint"))
+
+# merge, motherfucker!
+db <- ess %>% full_join(rrp2, by = "X")
+
+# attributing 0 for NA values
+table(db$vote.y)
+db$vote.y[is.na(db$vote.y)] <- 0
+
+# excluding "populist_vote" variable
+db$populist_vote <- NULL
+
+# renaming the dummy variable for populist vote
+db$populist_vt <- db$vote.y 
+table(db$populist_vt)
+
+# loading large dataset
+db <- read.csv("ess_large.csv")
+
+# reshaping variables
+db$lrgen <- db$lrgen + 1
+table(db$lrgen)
+
+# support for European integration
+db$supportEU <- db$supportEU + 1
+table(db$supportEU)
+
+#  "trust in European Parliament" (used as proxy to support for Europarliament)
+db$supportEP <- db$supportEP + 1
+table(db$supportEP)
+
+# allow many or few immigrants of different ethnic groups
+db$rejectdiffimmig <- db$rejectdiffimmig - 1
+table(db$rejectdiffimmig)
+
+# allow many or few immigrants of the same ethnic group
+db$rejectsameimmig <- db$rejectsameimmig + 1
+table(db$rejectsameimmig)
+
+# allow many or few immigrants from poorer countries outside Europe
+db$rejectpoorimmig <- db$rejectpoorimmig + 1
+table(db$rejectpoorimmig)
+
+# immigration makes country a worse or better place to live
+db$immgcntrybetter <- db$immgcntrybetter + 1
+table(db$immgcntrybetter)
+
+# national culture is undermined or enriched by immigrants
+# proxy to favours multiculturalism or assimilation
+db$assimil <- db$assimil + 1
+table(db$assimil)
+
+# take care of environment and nature or it doesn't matter
+db$envnotimp <- db$envnotimp + 1 
+table(db$envnotimp)
+
+# promotes civil liberties instead of tough policies on crime
+db$civliberties <- db$civliberties + 1
+table(db$civliberties)
+
+# importance to follow traditions and customs
+# (proxy to accdb how much the repondent favours liberal policies)
+db$libcustoms <- db$libcustoms + 1
+table(db$libcustoms)
+
+# how religious you are
+db$religious <- db$religious + 1
+table(db$religious)
+
+# government should be generous judging applications for refugees
+db$antirefugee <- db$antirefugee + 1
+table(db$antirefugee)
+
+# government should reduce differences in income levels
+db$govnotint <- db$govnotint - .25 
+table(db$govnotint)
+
+# party ban: inserting NA
+db$prtyban[db$prtyban > 5] <- NA
+
+# gays and lesbians to be free
+db$freehms[db$freehms > 5] <- NA
+
+# excluding repeated variables
+db$cntry.1 <- NULL
+db$X.1 <- NULL
+
+
+# saving dataset
+write.csv(db, "ess_large.csv")

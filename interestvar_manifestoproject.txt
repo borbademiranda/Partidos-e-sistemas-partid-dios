@@ -49,3 +49,7 @@ variables ches
 manifesto variables
 "pervote", "presvote", "absseat", "absseat", "rile", "planeco", "markeco", "welfare", "per102", "per102", "per102", "per201", "per305", "per401", "per402", "per403", "per501", 
 "per503", "per601", "per603", "per605", "per608", "per7062", "per201_2", "per202_4", "per305_3", "per601_1", "per601_2", "per605_1", "per608_1", "per608_2"
+
+"polintr", "psppsgv", "psppsgva", "psppipl", "psppipla", "trstprl", "trstplt", "trstprt",
+"vote", "clsprty", "prtdgcl", "mmbprty", "stfeco", "stfgov", "stfdem", "freehms", "prtyban", "crvctwr", "crvctef", "trrenyr", 
+"trrcnyr", "eisced", "eduyrs", "iscoco", "isco08", "uemp3m", "uemp5yr", "hinctnt", "hinctnta"  

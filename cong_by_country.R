@@ -1,5 +1,6 @@
 library(tidyverse)
 library(ggplot2)
+library(GGally)
 library(emdist)
 library(haven)
 library(magrittr)
@@ -49,6 +50,9 @@ essdk <- esswesteu[esswesteu$cntry == "DK",]
 chesde <- gov[gov$country == "ge",]
 essde <- esswesteu[esswesteu$cntry == "DE",]
 
+# selecting random rows from the German dataset (the emd cannot calculate distances in big datasets)
+essde <- essde[sample(nrow(essde), 15000),]
+
 chesfi <- gov[gov$country == "fin",]
 essfi <- esswesteu[esswesteu$cntry == "FI",]
 
@@ -67,7 +71,7 @@ essnl <- esswesteu[esswesteu$cntry == "NL",]
 chessv <- gov[gov$country == "sv",]
 esssv <- esswesteu[esswesteu$cntry == "SE",]
 
-##### inserting EMD in a dataframe #####
+##### inserting EMD by country in a dataframe #####
 EMD$fr <- c(
   emd.dis(chesfr$lrgen, essfr$lrgen), emd.dis(chesfr$fav_intEU, essfr$supportEU), 
   emd.dis(chesfr$fav_ep_power, essfr$supportEP), emd.dis(chesfr$postmat_trad, essfr$libcustoms),
