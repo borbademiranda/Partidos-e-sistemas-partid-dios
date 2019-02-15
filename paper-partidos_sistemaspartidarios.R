@@ -6,6 +6,8 @@ library(magrittr)
 library(corrgram)
 library(psych)
 library(lme4)
+library(dotwhisker)
+library(stargazer)
 
 setwd("C:/Users/test/Desktop/2018.2 - Partidos políticos e sistemas partidários/scripts")
 
@@ -383,46 +385,203 @@ ggsave("market.png", plot = multiplot(gen12, before12, after12, cols = 3),
 ##### models #####
 
 ess <- read.csv("ess_large.csv")
-ess2 <- na.omit(ess)
+ess$mmbprty[ess$mmbprty > 2] <- NA
+ess$mmbprty[ess$mmbprty == 2] <- 0
+ess$clsprty[ess$clsprty > 2] <- NA
+ess$clsprty[ess$clsprty == 2] <- 0
 attach(ess)
 
 corr <- ggpairs(ess[, c("lrgen", "supportEU", "rejectdiffimmig", "immgcntrybetter",
                         "stfdem", "stfeco", "stfgov")])
 
 # multi-level logit model 1 - general
-logit1 <- glmer(data = ess, populist_vt ~ agea + gndr + eduyrs + lrgen + stfdem + 
-                  stfgov + stfeco + supportEU + supportEP + rejectsameimmig + 
-                  immgcntrybetter + antirefugee + civliberties + libcustoms + 
-                  trstplt + trstprt + uemp3m + uemp5yr + hinctnta + (1 | cntry), 
-                family = "binomial", control = glmerControl(optimizer = "bobyqa"))
-summary(logit1)
+logit1 <- glmer(data = ess, populist_vt ~ clsprty + mmbprty + stfdem + 
+                  stfgov + supportEU + supportEP + trstplt + 
+                  trstprt + rejectdiffimmig + immgcntrybetter + assimil + lrgen +
+                  (1 | cntry) + (1 | essround), family = "binomial", 
+                control = glmerControl(optimizer = "bobyqa"))
 print(summary(logit1), corr = FALSE)
 
-# multi-level model 2: demographic variables
-logit3 <- glmer(populist_vt ~ agea + factor(gndr) + eduyrs + (1 | cntry), 
-                family = "binomial", control = glmerControl(optimizer = "bobyqa"))
+# calculating pseudo r2 Mc Fadden's
+LLK_Full1 <- logLik(logit1)[1]
+LLK_Int1 <- logLik(glm(populist_vt ~ 1, data = ess, family = binomial))[1]
+
+mf1 <- 1 - (LLK_Full1 / LLK_Int1)
+
+# Mc Fadden's Adjusted
+mf1adjusted <- 1 - ((LLK_Full1 - 5) / LLK_Int1)
+
+# multi-level model 2: attachment to parties
+logit2 <- glmer(data = ess, populist_vt ~ (1 | cntry) + (1 | essround) + clsprty + 
+                  mmbprty, family = "binomial", 
+                control = glmerControl(optimizer = "bobyqa"))
+print(summary(logit2), corr = F)
+
+# calculating pseudo r2 Mc Fadden's
+LLK_Full2 <- logLik(logit2)[1]
+LLK_Int2 <- logLik(glm(populist_vt ~ 1, data = ess, family = binomial))[1]
+
+mf2 <- 1 - (LLK_Full2 / LLK_Int2)
+
+# Mc Fadden's Adjusted
+mf2adjusted <- 1 - ((LLK_Full2 - 5) / LLK_Int2)
+
+# multi-level model 3: punishment variables
+logit3 <- glmer(populist_vt ~ (1 | cntry) + (1 | essround) + stfdem + stfgov + 
+                  trstplt + trstprt, data = ess, family = binomial("logit"),
+                control = glmerControl(optimizer = "bobyqa"))
 print(summary(logit3), corr = F)
 
-# multi-level model 3: immigration feelings
-logit4 <- glmer(populist_vt ~ immgcntrybetter + rejectdiffimmig + rejectsameimmig +
-                  antirefugee + assimil + (1 | cntry), data = ess, family = binomial("logit"),
+# calculating pseudo r2 Mc Fadden's
+LLK_Full3 <- logLik(logit3)[1]
+LLK_Int3 <- logLik(glm(populist_vt ~ 1, data = ess, family = binomial))[1]
+
+mf3 <- 1 - (LLK_Full3 / LLK_Int3)
+
+# Mc Fadden's Adjusted
+mf3adjusted <- 1 - ((LLK_Full3 - 5) / LLK_Int3)
+
+# multilevel model 4: EU and immigration variables
+logit4 <- glmer(populist_vt ~  (1 | cntry) + (1 | essround) + supportEU + 
+                  supportEP + rejectdiffimmig + immgcntrybetter + assimil, 
+                data = ess, family = binomial("logit"), 
                 control = glmerControl(optimizer = "bobyqa"))
 print(summary(logit4), corr = F)
 
-# multilevel model 4: ideological values
-summary(prtyban)
-logit5 <- glmer(populist_vt ~ lrgen + civliberties + libcustoms + freehms + 
-                  prtyban + prtdgcl + mmbprty + (1 | cntry), data = ess, family = 
-                  binomial("logit"), control = glmerControl(optimizer = "bobyqa"))
-summary(logit5)
+# calculating pseudo r2 Mc Fadden's
+LLK_Full4 <- logLik(logit4)[1]
+LLK_Int4 <- logLik(glm(populist_vt ~ 1, data = ess, family = binomial))[1]
+
+mf4 <- 1 - (LLK_Full4 / LLK_Int4)
+
+# Mc Fadden's Adjusted
+mf4adjusted <- 1 - ((LLK_Full4 - 5) / LLK_Int4)
+
+# plotting models
+coef <- dwplot(list(logit2, logit3, logit4, logit1), show_intercept = F,
+               vline = geom_vline(xintercept = 0, colour = "grey 60", 
+                                  linetype = 2),
+               order_vars = ) +
+  ggtitle("Coefficients") +
+  theme_classic() +
+  theme(plot.title = element_text(size = 12, hjust = 0.5, face = "bold"),
+        legend.title = element_text(size = 10, face = "bold"),
+        plot.caption = element_text(hjust = 0.5),
+        legend.position = "right",
+        legend.title.align = .5) + 
+  scale_color_discrete(name = "Models")
+
+ggsave("coef.png", plot = coef, device = "png", width = 6, height = 5)
+
+# converting models into dataframes
+library(broom)
+
+m1_tidy <- tidy(logit2)
+m2_tidy <- tidy(logit3)
+m3_tidy <- tidy(logit4)
+m4_tidy <- tidy(logit1)
+
+# modifying model names
+# model 1
+m1_tidy <- m1_tidy %>% 
+  mutate(model = "Alignment")
+
+# repeat for model 2
+m2_tidy <- m2_tidy %>% 
+  mutate(model = "Dissatisfaction")
+
+# model3 
+m3_tidy <- m3_tidy %>% mutate(model = "EU feelings") 
+
+# model 4
+m4_tidy <- m4_tidy %>% mutate(model = "General")
+
+# binding model data frames together
+all_models <- bind_rows(m1_tidy, m2_tidy, m3_tidy, m4_tidy)
+
+# renaming vars
+all_models <- all_models %>% 
+  relabel_predictors(c("sd_(Intercept).cntry" = "S.D. country",
+                       "sd_(Intercept).essround" = "S.D. year",
+                       "clsprty" = "Closer party", 
+                       "mmbprty" = "Member party",
+                       "stfdem" = "Satisf democracy",
+                       "stfgov" = "Satisf government",
+                       "trstplt" = "Trust in politicians",
+                       "trstprt" = "Trust in parties",
+                       "supportEU" = "Support for EU integration",
+                       "supportEP" = "Support powers of EP",
+                       "rejectdiffimmig" = "Reject immigrants",
+                       "immgcntrybetter" = "Immig. makes cntry better",
+                       "assimil" = "Assimilationism",
+                       "lrgen" = "Left-right"))
+
+# plotting
+coef_allmodels <- dwplot(all_models, show_intercept = F,
+                         vline = geom_vline(xintercept = 0, colour = "grey 60", 
+                                            linetype = 2)) +
+  ggtitle("Coefficients") +
+  labs(x = "Coefficients with 95% C.I.", caption = "Figure 10") +
+  theme_classic() +
+  theme(plot.title = element_text(size = 12, hjust = 0.5, face = "bold"),
+        legend.title = element_text(size = 10, face = "bold"),
+        plot.caption = element_text(hjust = 0.5),
+        legend.position = "right",
+        legend.title.align = .5) + 
+  scale_color_discrete(name = "Models")
+
+# saving plot
+ggsave("coef2.png", plot = coef_allmodels, device = "png", width = 6, height = 5)
 
 
-# logit model 2
-logit2 <- glm(data = ess, populist_vt ~ agea + gndr + eduyrs + lrgen + stfdem + 
-                stfgov + stfeco + supportEU + supportEP + rejectsameimmig + 
-                immgcntrybetter + antirefugee + civliberties + libcustoms + 
-                trstplt + trstprt + uemp5yr + hinctnta, family = "binomial")
-summary(logit2)
+# predicted probabilities
+# saving coefficients
+betagen <- logit1$coefficients
+
+# saving confidence intervals
+intgen <- confint(logit1)
+
+# converting from log odd to predicted probabilities
+betagen <- exp(betagen) / (1 + exp(betagen))
+intgen <- exp(intgen) / (1 + exp(intgen))
+
+# calculating standard deviation from the confidence intervals 
+stdgen <- (intgen[,2] - betagen) / 1.96
+
+# plotting model 4
+coefplot(betagen[2:15],
+         stdgen[2: 15],
+         varnames = c("Close prty", "Member prty", "S.D. Intercep country", 
+                      "S.D. intercep year", "Satisf democracy",
+                      "Satisf government", "Trust in politicians", "Trust in parties",
+                      "Support EU integration", "Support EP powers",
+                      "Reject immigrants", "Immig makes cntry better", 
+                      "Assimilation", "Left-right"),
+         main = "Predicted probability of voting in RRPPs (data from model 4)",
+         xlab = "Probability", lwd = 2, cex.lab = 1, cex.axis = 1,
+         sub = "Figure 7 - Author's ellaboration",
+         cex.var = 0.8,
+         cex.pts = 1.2,
+         cex.main = 1,
+         mar = c(1, 0, 5, 2),
+         var.las = 2)
+abline(v = 0.5, lty = 2)
+
+
+# table with coefficients
+stargazer(logit2, logit3, logit4, logit1,
+          title = "Table 1 - Results", 
+          dep.var.labels = "Vote in RRPP",
+          covariate.labels = c("Close prty", "Member prty", 
+                               "Satisf. democracy", "Satisf. government", 
+                               "Trust in politicians", "Trust in parties", 
+                               "Support EU int.", "Support EP powers", 
+                               "Reject immigrants", "Immig. makes country better",
+                               "Assimilationism", "Left-right"),
+          column.labels = c("Alignment", "Dissatisfaction", "EU feelings", "General"),
+          model.numbers = T,
+          mean.sd = T, min.max = T, median = T, iqr = T,
+          type = "html", align = T, out = "results1.htm")
 
 # confidence intervals
 se <- sqrt(diag(vcov(logit1)))
@@ -437,6 +596,11 @@ exp(tab)
 ##### loading dataset for west european countries #####
 cheswesteu <- read.csv("ches_westeu_intvar.csv")
 esswesteu <- read.csv("ess_westeu_intvar.csv")
+esswesteu$mmbprty[esswesteu$mmbprty > 2] <- NA
+esswesteu$mmbprty[esswesteu$mmbprty == 2] <- 0
+esswesteu$clsprty[esswesteu$clsprty > 2] <- NA
+esswesteu$clsprty[esswesteu$clsprty == 2] <- 0
+
 
 # only governing parties
 gov <- read.csv("ches_gov_westeu_intvar.csv")
@@ -770,24 +934,132 @@ plot(tapply(ches$vote, ches$year, mean) ~ c(2002, 2006, 2010, 2014),
      type = 'l', ylab = "Percantage of vote (mean)", ylim = c(0, 12),
      xlab = "Year", lwd = 2, cex.lab = 1, cex.axis = 1, family = 'serif',
      main = "Percantage of RRPPs votes - 2002-2014",
-     sub = "Figure 1 - Author's ellaboration")
+     sub = "Figure 1")
 
 line1 <- ggplot(data = ches, aes(x = factor(electionyear), y = vote)) +
   theme_classic() +
-  theme(axis.text.x = element_text(angle = 90)) +
+  theme(axis.text.x = element_text(angle = 90), 
+        plot.title = element_text(size = 12, hjust = .5, face = "bold"),
+        plot.caption = element_text(hjust = .5)) +
   scale_y_continuous(limits = c(1, 25)) +
-  labs(x = "Election year", y = "Average percentage of votes") +
+  labs(x = "Election year", y = "Average percentage of votes", 
+       caption = "Figure 1") +
+  ggtitle("Average vote by year of election") +
   stat_summary(fun.y = median, geom = "line", colour = "darkred", aes(group = 1)) +
   coord_cartesian(ylim = c(0, 20))
 
 line2 <- ggplot(data = ches, aes(x = factor(year), y = vote)) +
   theme_classic() +
-  labs(x = "Survey year", y = "Average percentage of votes") +
+  theme(plot.title = element_text(size = 12, hjust = .5, face = "bold"),
+        plot.caption = element_text(hjust = .5)) +
+  ggtitle("Average votes by year of survey") +
+  labs(x = "Survey year", y = "Average percentage of votes", 
+       caption = "Figure 2") +
   stat_summary(fun.y = mean, geom = "line", colour = "darkred", aes(group = 1)) +
   coord_cartesian(ylim = c(5, 12))
 
 ggsave("averagevotes.png", plot = multiplot(line1, line2, cols = 2),
        device = "png", width = 8, height = 3, units = "in")
+
+# average votes by party in all years of the study
+box1 <- ggplot(data = ches, aes(x = party, y = vote)) +
+  geom_boxplot() +
+  stat_summary(fun.y = mean, geom = "point", colour = "red", size = 1.5) +
+  coord_flip() +
+  theme_classic() +
+  labs(x = "Parties", y = "Percentage of votes", caption = "Figure 3") +
+  ggtitle("Average votes by party") +
+  theme(plot.title = element_text(size = 12, hjust = .5, face = "bold"),
+        plot.caption = element_text(hjust = .5))
+
+# histogram with the average vote by party
+hist1 <- ggplot(data = ches, aes(x = party, y = vote)) +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(x = "Parties", y = "Average vote (%)", caption = "Figure 4") +
+  stat_summary(fun.y = mean, geom = "bar", fill = "darkred", 
+               aes(group = 1)) +
+  facet_wrap(~ year) +
+  ggtitle("Average votes by party in year of study") +
+  theme(plot.title = element_text(size = 12, hjust = .5, face = "bold"),
+        plot.caption = element_text(hjust = .5))
+
+ggsave("avvote_rrpp.png", plot = multiplot(box1, hist1, cols = 2), device = "png", 
+       width = 8, height = 4)
+
+# trends of membership with party by country and year
+bar1 <- ggplot(data = esswesteu, aes(x = mmbprty)) +
+  geom_histogram() +
+  scale_x_discrete(limits = c(0, 1)) +
+  facet_grid(~factor(essround))
+
+# dissaproval of the incumbents term
+line3 <- ggplot(data = ess, aes(y = stfgov, x = essround, color = factor(cntry))) +
+  theme_classic() +
+  labs(y = "Average satisfaction with incumbent's term", x = "Suvey year",
+       caption = "Figure 4") +
+  ggtitle("Satisfaction with government by year") +
+  theme(plot.title = element_text(size = 12, hjust = 0.5, face = "bold"),
+        plot.caption = element_text(hjust = .5)) +
+  scale_x_continuous(limits = c(1, 7), breaks = 1 : 7, labels = c("2002", "2004",
+                                                                  "2006", "2008",
+                                                                  "2010", "2012",
+                                                                  "2014")) +
+  scale_y_continuous(limits = c(0, 10), breaks = 0 :10) +
+  stat_summary(fun.y = mean, geom = "line", aes(group = 1), colour = "red") +
+  coord_cartesian(ylim = 0 : 10)
+
+# satisfaction with democracy
+line4 <- ggplot(data = ess, aes(y = stfdem, x = essround, color = factor(cntry))) +
+  theme_classic() +
+  labs(y = "Average satisfaction with democracy", x = "Survey year",
+       caption = "Figure 5") +
+  ggtitle("Satisfaction with democracy by year") +
+  theme(plot.title = element_text(size = 12, hjust = 0.5, face = "bold"),
+        plot.caption = element_text(hjust = .5)) +
+  scale_x_continuous(limits = c(1, 7), breaks = 1 : 7, labels = c("2002", "2004",
+                                                                  "2006", "2008",
+                                                                  "2010", "2012",
+                                                                  "2014")) +
+  scale_y_continuous(limits = c(0, 10), breaks = 0 :10) +
+  stat_summary(fun.y = mean, geom = "line", aes(group = 1), colour = "red") +
+  coord_cartesian(ylim = 0 : 10)
+
+# trust in politicians
+line5 <- ggplot(data = ess, aes(y = trstplt, x = essround, color = factor(cntry))) +
+  theme_classic() +
+  labs(y = "Average trust in politicians", x = "Survey year", caption = "Figure 6") +
+  ggtitle("Trust in politicians by year") +
+  theme(plot.title = element_text(size = 12, hjust = 0.5, face = "bold"),
+        plot.caption = element_text(hjust = .5)) +
+  scale_x_continuous(limits = c(1, 7), breaks = 1 : 7, labels = c("2002", "2004",
+                                                                  "2006", "2008",
+                                                                  "2010", "2012",
+                                                                  "2014")) +
+  scale_y_continuous(limits = c(0, 10), breaks = 0 :10) +
+  stat_summary(fun.y = mean, geom = "line", aes(group = 1), colour = "red") +
+  coord_cartesian(ylim = 0 : 10)
+
+# trust in parties
+line6 <- ggplot(data = ess, aes(y = trstprt, x = essround, color = factor(cntry))) +
+  theme_classic() +
+  labs(y = "Average trust in parties", x = "Survey year", caption = "Figure 7") +
+  ggtitle("Trust in parties by year") +
+  theme(plot.title = element_text(size = 12, hjust = 0.5, face = "bold"),
+        plot.caption = element_text(hjust = .5)) +
+  scale_x_continuous(limits = c(2, 7), breaks = 2 : 7, labels = c("2004",
+                                                                  "2006", "2008",
+                                                                  "2010", "2012",
+                                                                  "2014")) +
+  scale_y_continuous(limits = c(0, 10), breaks = 0 :10) +
+  stat_summary(fun.y = mean, geom = "line", aes(group = 1), colour = "red") +
+  coord_cartesian(ylim = 0 : 10)
+
+ggsave("stfdem_stfgov.png", plot = multiplot(line3, line4, cols = 2), device = "png",
+       width = 8, height = 4)
+ggsave("trstplt_trstprt.png", plot = multiplot(line5, line6, cols = 2), device = "png",
+       width = 8, height = 4)
+
 
 ##### rrpp voters and general electorate #####
 Graf20 <- function(VB, VW, Lab1, Lab10, Numero, Titulo) {
